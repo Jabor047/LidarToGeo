@@ -3,9 +3,6 @@ import boto3
 import logging
 import asyncio
 from aiohttp import ClientSession
-import urllib.request
-import numpy as np
-from pprint import pprint
 from ept_info import Info
 
 form = logging.Formatter("%(asctime)s : %(levelname)-5.5s : %(message)s")
@@ -69,6 +66,4 @@ def load_ept_json() -> dict:
         except json.decoder.JSONDecodeError as e:
             print(regions[i].result()[0])
 
-    pprint(region_ept_info)
-
-load_ept_json()
+    return(region_ept_info)
