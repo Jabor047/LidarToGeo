@@ -2,17 +2,31 @@ import ast
 import pdal
 import json
 import load_data
+import logging
+import georasters as gr
+import geopandas as gpd
+
+form = logging.Formatter("%(asctime)s : %(levelname)-5.5s : %(message)s")
+logger = logging.getLogger()
+
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(form)
+logger.addHandler(consoleHandler)
+
+logger.setLevel(logging.INFO)
 
 PUBLIC_DATA_PATH = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
-REGION = 'IA_FullState/'
+
 # ([minx, maxx], [miny, maxy])
 BOUNDS = "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
-PUBLIC_ACCESS_PATH = PUBLIC_DATA_PATH + REGION + "ept.json"
+
 OUTPUT_FILENAME_LAZ = "laz/iowa2.laz"
 OUTPUT_FILENAME_TIF = "tif/iowa2.tif"
 PIPELINE_PATH = 'get_data.json'
 
 def get_region(bounds: str):
+    logger.info("\n\n Finding bounds region")
     region_ept_info = load_data.load_ept_json()
     user_bounds = ast.literal_eval(bounds)
 
@@ -28,8 +42,8 @@ def get_raster_terrain(bounds: str,
                        OUTPUT_FILENAME_TIF: str = OUTPUT_FILENAME_TIF,
                        PIPELINE_PATH: str = PIPELINE_PATH) -> None:
 
-    # print(BOUNDS)
     region = get_region(bounds)
+    logger.info(f"Fetching Laz and tiff files for {region}")
     PUBLIC_ACCESS_PATH = PUBLIC_DATA_PATH + region + "ept.json"
 
     with open(PIPELINE_PATH) as json_file:
@@ -57,5 +71,24 @@ def get_raster_terrain(bounds: str,
         pass
 
 
+def geodataframe(tif_file: str, crs: int) -> gpd.GeoDataFrame:
+    data = gr.from_file(tif_file)
+    df = data.to_pandas()
+
+    df.drop(["row", "col"], axis=1)
+    df.rename(columns={'value': 'elevation'}, inplace=True)
+    df = df[['x', 'y', 'elevation']]
+
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y))
+
+    epsg = 'epsg: ' + str(crs)
+    gdf.crs = {}
+
+    print(gdf.head())
+
+    return gdf
+
 if __name__ == "__main__":
-    get_raster_terrain(bounds=BOUNDS)
+    # get_raster_terrain(bounds=BOUNDS)
+    # elevation()
+    geodataframe('tif/iowa2.tif', 32618)

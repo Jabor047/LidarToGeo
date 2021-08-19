@@ -37,9 +37,8 @@ async def run():
     regions = list_folders(s3, bucket)
     region_info = []
     async with ClientSession() as session:
-        logger.info("loading the ept.json files")
+        logger.info(f"loading the ept.json files from {bucket}")
         for region in regions:
-            logger.info(f"reading {region[:-1]}'s ept.json file")
             if region == "USGS_LPC_WA_Western_North_2016_LAS_2018/" or \
                     region == "USGS_LPC_WA_Western_South_2016_LAS_2018/":
                 ept_json_path = bucket_url + region + "ept-1.json"
@@ -47,7 +46,6 @@ async def run():
                 ept_json_path = bucket_url + region + "ept.json"
             ept_region_info = asyncio.ensure_future(fetch(region, ept_json_path, session))
             region_info.append(ept_region_info)
-            logger.info(f"loaded {region[:-1]}'s ept.json file")
 
         response = await asyncio.gather(*region_info)
 
