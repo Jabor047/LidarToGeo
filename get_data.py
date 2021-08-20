@@ -16,79 +16,96 @@ logger.addHandler(consoleHandler)
 
 logger.setLevel(logging.INFO)
 
-PUBLIC_DATA_PATH = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
+class RasterGetter:
 
-# ([minx, maxx], [miny, maxy])
-BOUNDS = "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
+    def __init__(self, bounds: str, crs: int) -> None:
+        self.bounds = bounds
+        self.crs = crs
+        self.public_data_path = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
+        # get region based in bounds
+        self.region = self.get_region(bounds)
+        self.load_pipeline()
 
-OUTPUT_FILENAME_LAZ = "laz/iowa2.laz"
-OUTPUT_FILENAME_TIF = "tif/iowa2.tif"
-PIPELINE_PATH = 'get_data.json'
+    def get_region(self, bounds: str) -> str:
+        logger.info("\n\n Finding bounds region")
+        region_ept_info = load_data.load_ept_json()
+        user_bounds = ast.literal_eval(bounds)
 
-def get_region(bounds: str):
-    logger.info("\n\n Finding bounds region")
-    region_ept_info = load_data.load_ept_json()
-    user_bounds = ast.literal_eval(bounds)
+        for key, value in region_ept_info.items():
+            if value.bounds[0] <= user_bounds[0][0] and \
+                value.bounds[1] <= user_bounds[1][0] and \
+                value.bounds[3] >= user_bounds[0][1] and \
+                    value.bounds[4] >= user_bounds[1][1]:
+                return key
 
-    for key, value in region_ept_info.items():
-        if value.bounds[0] <= user_bounds[0][0] and \
-            value.bounds[1] <= user_bounds[1][0] and \
-            value.bounds[3] >= user_bounds[0][1] and \
-                value.bounds[4] >= user_bounds[1][1]:
-            return key
+    def load_pipeline(self, pipeline_filename='get_data.json'):
+        try:
+            with open(pipeline_filename) as json_file:
+                the_json = json.load(json_file)
 
-def get_raster_terrain(bounds: str,
-                       OUTPUT_FILENAME_LAZ: str = OUTPUT_FILENAME_LAZ,
-                       OUTPUT_FILENAME_TIF: str = OUTPUT_FILENAME_TIF,
-                       PIPELINE_PATH: str = PIPELINE_PATH) -> None:
+            self.external_pipeline = the_json
+            logger.info("Template Pipeline Successfully Loaded")
+        except Exception as e:
+            print(e)
+            logger.info("Template Pipeline Could not be Loaded")
 
-    region = get_region(bounds)
-    logger.info(f"Fetching Laz and tiff files for {region}")
-    PUBLIC_ACCESS_PATH = PUBLIC_DATA_PATH + region + "ept.json"
+    def get_raster_terrain(self) -> None:
 
-    with open(PIPELINE_PATH) as json_file:
-        the_json = json.load(json_file)
+        logger.info(f"Fetching Laz and tiff files for {self.region}")
+        PUBLIC_ACCESS_PATH = self.public_data_path + self.region + "ept.json"
 
-    the_json['pipeline'][0]['bounds'] = bounds
-    the_json['pipeline'][0]['filename'] = PUBLIC_ACCESS_PATH
-    the_json['pipeline'][3]['filename'] = OUTPUT_FILENAME_LAZ
-    the_json['pipeline'][4]['filename'] = OUTPUT_FILENAME_TIF
+        # dynamically update template pipeline
+        self.external_pipeline['pipeline'][0]['bounds'] = self.bounds
+        self.external_pipeline['pipeline'][0]['filename'] = PUBLIC_ACCESS_PATH
+        self.external_pipeline['pipeline'][3]['filename'] = f"{str(self.region).strip('/')}.laz"
+        self.external_pipeline['pipeline'][4]['filename'] = f"{str(self.region).strip('/')}.tif"
 
-    pipeline = pdal.Pipeline(json.dumps(the_json))
+        # create pdal pipeline
+        pipeline = pdal.Pipeline(json.dumps(self.external_pipeline))
+        logger.info("Pipeline Dumped and Read for use")
 
-    try:
-        pipe_exec = pipeline.execute()
-        metadata = pipeline.metadata
-        log = pipeline.log
+        # execute pipeline
+        try:
+            pipe_exec = pipeline.execute()
+            metadata = pipeline.metadata
+            log = pipeline.log
+            logger.info("Pipeline Complete Execution Successfully ")
 
-        print('metadata', metadata)
-        print('logs', log)
+        except RuntimeError as e:
+            print(e)
+            logger.info("Pipeline Process Could not be completed")
 
-    except RuntimeError as e:
-        print(e)
-        # RuntimeError: filters.hag: Input PointView does not have any points classified as ground
-        print('RunTime Error, writing 0s and moving to next bounds')
-        pass
+    def get_geodataframe(self, tif_file: str, save: bool) -> gpd.GeoDataFrame:
+        self.get_raster_terrain()
+        data = gr.from_file(tif_file)
+        logger.info("GeoTiff File Loaded")
 
+        df = data.to_pandas()
 
-def geodataframe(tif_file: str, crs: int) -> gpd.GeoDataFrame:
-    data = gr.from_file(tif_file)
-    df = data.to_pandas()
+        df.drop(["row", "col"], axis=1)
+        df.rename(columns={'value': 'elevation'}, inplace=True)
+        df = df[['x', 'y', 'elevation']]
 
-    df.drop(["row", "col"], axis=1)
-    df.rename(columns={'value': 'elevation'}, inplace=True)
-    df = df[['x', 'y', 'elevation']]
+        self.gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y))
 
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y))
+        epsg = 'EPSG:' + str(self.crs)
+        self.gdf.crs = epsg
 
-    epsg = 'epsg: ' + str(crs)
-    gdf.crs = {}
+        print(self.gdf.head())
 
-    print(gdf.head())
+        if save:
+            self.save_geodataframe(csv_filename=f"{str(self.region).strip('/')}.csv")
+            return self.gdf
+        else:
+            return self.gdf
 
-    return gdf
+    def save_geodataframe(self, csv_filename: str):
+        self.gdf.to_csv(csv_filename, index=False)
+        logger.info(f"GeoDataframe Elevation File Successfully Saved here {csv_filename}")
 
 if __name__ == "__main__":
-    # get_raster_terrain(bounds=BOUNDS)
-    # elevation()
-    geodataframe('tif/iowa2.tif', 32618)
+    BOUNDS = "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
+
+    raster = RasterGetter(bounds=BOUNDS, crs=32618)
+    raster.get_raster_terrain()
+    raster.get_geodataframe(f"{str(raster.region).strip('/')}.tif", True)
