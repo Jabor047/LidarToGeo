@@ -71,7 +71,7 @@ class RasterGetter:
         log = pipeline.log
         logger.info("Pipeline Complete Execution Successfully ")
 
-    def get_geodataframe(self, tif_file: str, save: bool) -> gpd.GeoDataFrame:
+    def get_geodataframe(self, tif_file: str, region: str, save: bool) -> gpd.GeoDataFrame:
         data = gr.from_file(tif_file)
         logger.info("GeoTiff File Loaded")
 
@@ -87,14 +87,14 @@ class RasterGetter:
         self.gdf.crs = epsg
 
         if save:
-            self.save_geodataframe(csv_filename=f"{str(self.region).strip('/')}.csv")
+            self.save_geodataframe(filename=f"{str(region).strip('/')}.geojson")
             return self.gdf
         else:
             return self.gdf
 
-    def save_geodataframe(self, csv_filename: str):
-        self.gdf.to_csv(csv_filename, index=False)
-        logger.info(f"GeoDataframe Elevation File Successfully Saved here {csv_filename}")
+    def save_geodataframe(self, filename: str):
+        self.gdf.to_file(filename, driver="GeoJSON")
+        logger.info(f"GeoDataframe Elevation File Successfully Saved here {filename}")
 
     def region_gpd_dict(self) -> dict:
         region_gpd = {}
@@ -106,7 +106,7 @@ class RasterGetter:
                 print("\n")
                 self.get_raster_terrain(region)
                 gpd = self.get_geodataframe(f"{str(region).strip('/')}.tif",
-                                            False)
+                                            region, True)
                 region_gpd[year] = gpd
             except RuntimeError as e:
                 logger.warning(e)
