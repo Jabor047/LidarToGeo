@@ -5,6 +5,7 @@ import load_data
 import logging
 import georasters as gr
 import geopandas as gpd
+from pprint import pprint
 
 form = logging.Formatter("%(asctime)s : %(levelname)-5.5s : %(message)s")
 logger = logging.getLogger()
@@ -23,20 +24,23 @@ class RasterGetter:
         self.crs = crs
         self.public_data_path = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
         # get region based in bounds
-        self.region = self.get_region(bounds)
+        self.regions = self.get_region(bounds)
         self.load_pipeline()
 
     def get_region(self, bounds: str) -> str:
         logger.info("\n\n Finding bounds region")
         region_ept_info = load_data.load_ept_json()
         user_bounds = ast.literal_eval(bounds)
+        regions = []
 
         for key, value in region_ept_info.items():
             if value.bounds[0] <= user_bounds[0][0] and \
                 value.bounds[1] <= user_bounds[1][0] and \
                 value.bounds[3] >= user_bounds[0][1] and \
                     value.bounds[4] >= user_bounds[1][1]:
-                return key
+                regions.append(key)
+
+        return regions
 
     def load_pipeline(self, pipeline_filename='get_data.json'):
         try:
@@ -49,16 +53,16 @@ class RasterGetter:
             print(e)
             logger.info("Template Pipeline Could not be Loaded")
 
-    def get_raster_terrain(self) -> None:
+    def get_raster_terrain(self, region: str) -> None:
 
-        logger.info(f"Fetching Laz and tiff files for {self.region}")
-        PUBLIC_ACCESS_PATH = self.public_data_path + self.region + "ept.json"
+        logger.info(f"Fetching Laz and tiff files for {region}")
+        PUBLIC_ACCESS_PATH = self.public_data_path + region + "ept.json"
 
         # dynamically update template pipeline
         self.external_pipeline['pipeline'][0]['bounds'] = self.bounds
         self.external_pipeline['pipeline'][0]['filename'] = PUBLIC_ACCESS_PATH
-        self.external_pipeline['pipeline'][3]['filename'] = f"{str(self.region).strip('/')}.laz"
-        self.external_pipeline['pipeline'][4]['filename'] = f"{str(self.region).strip('/')}.tif"
+        self.external_pipeline['pipeline'][3]['filename'] = f"{str(region).strip('/')}.laz"
+        self.external_pipeline['pipeline'][4]['filename'] = f"{str(region).strip('/')}.tif"
 
         # create pdal pipeline
         pipeline = pdal.Pipeline(json.dumps(self.external_pipeline))
@@ -76,7 +80,6 @@ class RasterGetter:
             logger.info("Pipeline Process Could not be completed")
 
     def get_geodataframe(self, tif_file: str, save: bool) -> gpd.GeoDataFrame:
-        self.get_raster_terrain()
         data = gr.from_file(tif_file)
         logger.info("GeoTiff File Loaded")
 
@@ -103,9 +106,22 @@ class RasterGetter:
         self.gdf.to_csv(csv_filename, index=False)
         logger.info(f"GeoDataframe Elevation File Successfully Saved here {csv_filename}")
 
+    def year_gpd_dict(self) -> dict:
+        year_gpd = {}
+        for region in self.regions:
+            year = region.split("_")[-1][:-1]
+            if not year.isdigit():
+                year = region
+
+            self.get_raster_terrain(region)
+            year_gpd[year] = self.get_geodataframe(f"{str(region).strip('/')}.tif", False)
+
+        return year_gpd
+
 if __name__ == "__main__":
     BOUNDS = "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
+    # 32618
 
     raster = RasterGetter(bounds=BOUNDS, crs=32618)
-    raster.get_raster_terrain()
-    raster.get_geodataframe(f"{str(raster.region).strip('/')}.tif", True)
+    dict_year_gpd = raster.year_gpd_dict()
+    pprint(dict_year_gpd)
