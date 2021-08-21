@@ -12,7 +12,8 @@
             "tag": "nonoise"
         },
         {
-            "out_srs": "EPSG:26915",
+            "in_srs": "",
+            "out_srs": "",
             "tag": "reprojectUTM",
             "type": "filters.reprojection"
         },
@@ -28,7 +29,7 @@
             "inputs": [ "writerslas" ],
             "nodata": -9999,
             "output_type": "idw",
-            "resolution": 1,
+            "resolution": 5,
             "type": "writers.gdal",
             "window_size": 6
         }

@@ -1,19 +1,11 @@
 import json
 import boto3
-import logging
 import asyncio
 from aiohttp import ClientSession
 from ept_info import Info
+from logger import setup_logger
 
-form = logging.Formatter("%(asctime)s : %(levelname)-5.5s : %(message)s")
-logger = logging.getLogger()
-
-
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(form)
-logger.addHandler(consoleHandler)
-
-logger.setLevel(logging.INFO)
+logger = setup_logger("load_data")
 
 s3 = boto3.client("s3")
 bucket = "usgs-lidar-public"
