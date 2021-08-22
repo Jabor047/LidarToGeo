@@ -23,7 +23,7 @@ class RasterGetter:
         self.load_pipeline()
 
     def get_region(self, bounds: str) -> str:
-        logger.info("Finding inputed bound's region")
+        logger.info("Finding Entered bound's region")
         region_ept_info = load_data.load_ept_json()
         user_bounds = ast.literal_eval(bounds)
         regions = []
@@ -36,7 +36,7 @@ class RasterGetter:
                 regions.append(key)
 
         print("\n")
-        logger.info(f"region containing the boundaries are {regions}")
+        logger.info(f"regions containing the boundaries are {regions}")
         return regions
 
     def load_pipeline(self, pipeline_filename='get_data.json'):
@@ -71,7 +71,7 @@ class RasterGetter:
         pipe_exec = pipeline.execute()
         metadata = pipeline.metadata
         log = pipeline.log
-        logger.info("Pipeline Complete Execution Successfully ")
+        logger.info("Pipeline Completed Execution Successfully ")
 
     def get_geodataframe(self, region: str, save_png: bool, resolution: int = 5) -> gpd.GeoDataFrame:
         self.tif_to_shp(f"{str(region).strip('/')}.tif", f"{str(region).strip('/')}.shp")
@@ -81,12 +81,12 @@ class RasterGetter:
         gdf["denom"] = gdf["elevation"] / resolution
         gdf["TWI"] = np.log(gdf["area"] / gdf["denom"])
 
-        gdf.drop(["area", "denom"], axis=1)
+        gdf.drop(["area", "denom"], axis=1, inplace=True)
 
         gdf["geometry"] = gdf["geometry"].centroid
 
         if save_png:
-            logger.info(f"saving plot at {str(region).strip('/')}.png")
+            logger.info(f"saving plot as {str(region).strip('/')}.png")
             plot = self.gdf.plot(column="elevation", kind='geo', legend=True)
             fig = plot.get_figure()
             fig.set_size_inches(18.5, 10.5)
@@ -98,7 +98,7 @@ class RasterGetter:
 
     def save_as_geojson(self, filename: str):
         self.gdf.to_file(filename, driver="GeoJSON")
-        logger.info(f"GeoDataframe Elevation File Successfully Saved here {filename}")
+        logger.info(f"GeoDataframe Elevation File Successfully Saved as {filename}")
 
     def region_gdf_dict(self) -> dict:
         region_gdf = {}
@@ -120,11 +120,11 @@ class RasterGetter:
 
         return region_gdf
 
-    def tif_to_shp(self, shp_filename: str, tif_filename: str) -> None:
+    def tif_to_shp(self, tif_filename: str, shp_filename: str) -> None:
         # mapping between gdal type and ogr field type
         type_mapping = {gdal.GDT_Byte: ogr.OFTInteger,
-                        gdal.GDT_UInt16: ogr.OFTInteger,   
-                        gdal.GDT_Int16: ogr.OFTInteger,    
+                        gdal.GDT_UInt16: ogr.OFTInteger,
+                        gdal.GDT_Int16: ogr.OFTInteger,
                         gdal.GDT_UInt32: ogr.OFTInteger,
                         gdal.GDT_Int32: ogr.OFTInteger,
                         gdal.GDT_Float32: ogr.OFTReal,
@@ -139,7 +139,7 @@ class RasterGetter:
         try:
             ds = gdal.Open(tif_filename)
         except RuntimeError as e:
-            logger.error("could not open {tif_filename}")
+            logger.error(f"could not open {tif_filename}")
             exit()
 
         try:
@@ -165,5 +165,4 @@ if __name__ == "__main__":
     # 32618
 
     raster = RasterGetter(bounds=BOUNDS, crs=3857)
-    dict_region_gpd = raster.region_gpd_dict()
-    pprint(dict_region_gpd)
+    dict_region_gpd = raster.region_gdf_dict()
