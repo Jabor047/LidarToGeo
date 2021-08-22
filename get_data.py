@@ -1,8 +1,10 @@
 import ast
-from logging import Logger
+import math
 import pdal
 import json
 import load_data
+from osgeo import ogr, gdal
+import numpy as np
 import georasters as gr
 import geopandas as gpd
 from pprint import pprint
@@ -71,33 +73,35 @@ class RasterGetter:
         log = pipeline.log
         logger.info("Pipeline Complete Execution Successfully ")
 
-    def get_geodataframe(self, tif_file: str, region: str, save: bool) -> gpd.GeoDataFrame:
-        data = gr.from_file(tif_file)
-        logger.info("GeoTiff File Loaded")
+    def get_geodataframe(self, region: str, save_png: bool, resolution: int = 5) -> gpd.GeoDataFrame:
+        self.tif_to_shp(f"{str(region).strip('/')}.tif", f"{str(region).strip('/')}.shp")
+        gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
 
-        df = data.to_pandas()
+        gdf["area"] = gdf["geometry"].area
+        gdf["denom"] = gdf["elevation"] / resolution
+        gdf["TWI"] = np.log(gdf["area"] / gdf["denom"])
 
-        df.drop(["row", "col"], axis=1)
-        df.rename(columns={'value': 'elevation'}, inplace=True)
-        df = df[['x', 'y', 'elevation']]
+        gdf.drop(["area", "denom"], axis=1)
 
-        self.gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y))
+        gdf["geometry"] = gdf["geometry"].centroid
 
-        epsg = 'EPSG:' + str(self.crs)
-        self.gdf.crs = epsg
+        if save_png:
+            logger.info(f"saving plot at {str(region).strip('/')}.png")
+            plot = self.gdf.plot(column="elevation", kind='geo', legend=True)
+            fig = plot.get_figure()
+            fig.set_size_inches(18.5, 10.5)
+            fig.savefig(f"{str(region).strip('/')}.png")
 
-        if save:
-            self.save_geodataframe(filename=f"{str(region).strip('/')}.geojson")
-            return self.gdf
-        else:
-            return self.gdf
+        print(gdf.head)
 
-    def save_geodataframe(self, filename: str):
+        return gdf
+
+    def save_as_geojson(self, filename: str):
         self.gdf.to_file(filename, driver="GeoJSON")
         logger.info(f"GeoDataframe Elevation File Successfully Saved here {filename}")
 
-    def region_gpd_dict(self) -> dict:
-        region_gpd = {}
+    def region_gdf_dict(self) -> dict:
+        region_gdf = {}
         for region in self.regions:
             year = region.split("_")[-1][:-1]
             if not year.isdigit():
@@ -105,9 +109,8 @@ class RasterGetter:
             try:
                 print("\n")
                 self.get_raster_terrain(region)
-                gpd = self.get_geodataframe(f"{str(region).strip('/')}.tif",
-                                            region, True)
-                region_gpd[year] = gpd
+                gdf = self.get_geodataframe(region, False)
+                region_gdf[year] = gdf
             except RuntimeError as e:
                 logger.warning(e)
                 logger.info(f"Pipeline Process Could not be completed for region {region}")
@@ -115,7 +118,47 @@ class RasterGetter:
                     print("\n")
                     logger.info("fecthing the next region")
 
-        return region_gpd
+        return region_gdf
+
+    def tif_to_shp(self, shp_filename: str, tif_filename: str) -> None:
+        # mapping between gdal type and ogr field type
+        type_mapping = {gdal.GDT_Byte: ogr.OFTInteger,
+                        gdal.GDT_UInt16: ogr.OFTInteger,   
+                        gdal.GDT_Int16: ogr.OFTInteger,    
+                        gdal.GDT_UInt32: ogr.OFTInteger,
+                        gdal.GDT_Int32: ogr.OFTInteger,
+                        gdal.GDT_Float32: ogr.OFTReal,
+                        gdal.GDT_Float64: ogr.OFTReal,
+                        gdal.GDT_CInt16: ogr.OFTInteger,
+                        gdal.GDT_CInt32: ogr.OFTInteger,
+                        gdal.GDT_CFloat32: ogr.OFTReal,
+                        gdal.GDT_CFloat64: ogr.OFTReal}
+
+        gdal.UseExceptions()
+        logger.info("Converting tif file to shp")
+        try:
+            ds = gdal.Open(tif_filename)
+        except RuntimeError as e:
+            logger.error("could not open {tif_filename}")
+            exit()
+
+        try:
+            srcband = ds.GetRasterBand(1)
+        except RuntimeError as e:
+            # for example, try GetRasterBand(10)
+            logger.error('Band ( %i ) not found' % 1)
+            logger.error(e)
+            exit()
+
+        # create shapefile datasource from geotiff file
+        logger.info(f"saving shapefile to {shp_filename}")
+        dst_layername = "Shape"
+        drv = ogr.GetDriverByName("ESRI Shapefile")
+        dst_ds = drv.CreateDataSource(shp_filename)
+        dst_layer = dst_ds.CreateLayer(dst_layername, srs=None)
+        raster_field = ogr.FieldDefn('elevation', type_mapping[srcband.DataType])
+        dst_layer.CreateField(raster_field)
+        gdal.Polygonize(srcband, None, dst_layer, 0, [], callback=None)
 
 if __name__ == "__main__":
     BOUNDS = "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
