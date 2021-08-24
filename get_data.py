@@ -22,7 +22,7 @@ class RasterGetter:
         self.regions = self.get_region(bounds)
         self.load_pipeline()
 
-    def get_region(self, bounds: str) -> str:
+    def get_region(self, bounds: str) -> list:
         logger.info("Finding Entered bound's region")
         region_ept_info = load_data.load_ept_json()
         user_bounds = ast.literal_eval(bounds)
@@ -39,16 +39,57 @@ class RasterGetter:
         logger.info(f"regions containing the boundaries are {regions}")
         return regions
 
-    def load_pipeline(self, pipeline_filename='get_data.json'):
-        try:
-            with open(pipeline_filename) as json_file:
-                the_json = json.load(json_file)
+    def construct_pipeline(self):
+        self.dynamic_pipeline = []
+        reader = {
+            "bounds": "",
+            "filename": "",
+            "type": "readers.ept",
+            "tag": "readdata"
+        }
+        self.dynamic_pipeline.append(reader)
+        classification_filter = {
+            "limits": "Classification![2:7], Classification![9:9]",
+            "type": "filters.range",
+            "tag": "nonoise"
 
-            self.external_pipeline = the_json
-            logger.info("Template Pipeline Successfully Loaded")
+        }
+        self.dynamic_pipeline.append(classification_filter)
+        reprojection = {
+            "in_srs": "EPSG:3857",
+            "out_srs": "EPSG:3857",
+            "tag": "reprojectUTM",
+            "type": "filters.reprojection"
+        }
+        self.dynamic_pipeline.append(reprojection)
+        laz_writer = {
+            "filename": "",
+            "inputs": ["reprojectUTM"],
+            "tag": "writerslas",
+            "type": "writers.las"
+        }
+        self.dynamic_pipeline.append(laz_writer)
+        tif_writer = {
+            "filename": "",
+            "gdalopts": "tiled=yes,     compress=deflate",
+            "inputs": ["writerslas"],
+            "nodata": -9999,
+            "output_type": "idw",
+            "resolution": 1,
+            "type": "writers.gdal",
+            "window_size": 6
+        }
+        self.dynamic_pipeline.append(tif_writer)
+
+        return self.dynamic_pipeline
+
+    def load_pipeline(self):
+        try:
+            self.external_pipeline = self.construct_pipeline()
+            logger.info("Template Pipeline Successfully created")
         except Exception as e:
             print(e)
-            logger.info("Template Pipeline Could not be Loaded")
+            logger.info("Template Pipeline Could not be created")
 
     def get_raster_terrain(self, region: str) -> None:
 
@@ -73,7 +114,7 @@ class RasterGetter:
         log = pipeline.log
         logger.info("Pipeline Completed Execution Successfully ")
 
-    def get_geodataframe(self, region: str, save_png: bool, resolution: int = 5) -> gpd.GeoDataFrame:
+    def get_geodataframe(self, region: str, save_png: bool, resolution: int) -> gpd.GeoDataFrame:
         self.tif_to_shp(f"{str(region).strip('/')}.tif", f"{str(region).strip('/')}.shp")
         gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
 
@@ -92,15 +133,13 @@ class RasterGetter:
             fig.set_size_inches(18.5, 10.5)
             fig.savefig(f"{str(region).strip('/')}.png")
 
-        print(gdf.head)
-
         return gdf
 
-    def save_as_geojson(self, filename: str):
+    def save_as_geojson(self, filename: str) -> None:
         self.gdf.to_file(filename, driver="GeoJSON")
         logger.info(f"GeoDataframe Elevation File Successfully Saved as {filename}")
 
-    def region_gdf_dict(self) -> dict:
+    def region_gdf_dict(self, saved_png: bool, resolution: int = 5) -> dict:
         region_gdf = {}
         for region in self.regions:
             year = region.split("_")[-1][:-1]
@@ -109,7 +148,7 @@ class RasterGetter:
             try:
                 print("\n")
                 self.get_raster_terrain(region)
-                gdf = self.get_geodataframe(region, False)
+                gdf = self.get_geodataframe(region, saved_png, resolution)
                 region_gdf[year] = gdf
             except RuntimeError as e:
                 logger.warning(e)
@@ -165,4 +204,4 @@ if __name__ == "__main__":
     # 32618
 
     raster = RasterGetter(bounds=BOUNDS, crs=3857)
-    dict_region_gpd = raster.region_gdf_dict()
+    dict_region_gpd = raster.region_gdf_dict(False, 5)

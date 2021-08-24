@@ -21,11 +21,11 @@ def list_folders(s3_client: str, bucket_name: str):
         for content in page.get("CommonPrefixes", []):
             yield content.get('Prefix')
 
-async def fetch(region, url, session):
+async def fetch(region, url, session) -> tuple:
     async with session.get(url) as response:
         return (region, await response.read())
 
-async def run():
+async def run() -> list:
     regions = list_folders(s3, bucket)
     region_info = []
     async with ClientSession() as session:
