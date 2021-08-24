@@ -13,6 +13,7 @@ from logger import setup_logger
 logger = setup_logger("get_data")
 
 class RasterGetter:
+    """ """
 
     def __init__(self, bounds: str, crs: int) -> None:
         self.bounds = bounds
@@ -23,6 +24,20 @@ class RasterGetter:
         self.load_pipeline()
 
     def get_region(self, bounds: str) -> list:
+        """
+
+        Gets all the regions the given boundaries lie in
+
+        Parameters
+        ----------
+        bounds: str : a string containing the bounds you wish to get a
+                    geodataframe of. e.g "([-10425171.940, -10423171.940], [5164494.710, 5166494.710])"
+
+        Returns: a list with all the regions the give bounds
+                lie inf
+        -------
+
+        """
         logger.info("Finding Entered bound's region")
         region_ept_info = load_data.load_ept_json()
         user_bounds = ast.literal_eval(bounds)
@@ -39,7 +54,11 @@ class RasterGetter:
         logger.info(f"regions containing the boundaries are {regions}")
         return regions
 
-    def construct_pipeline(self):
+    def construct_pipeline(self) -> list:
+        """
+        creates a list containing a json of the pipeline to pass into the PDAL
+        library
+        """
         self.dynamic_pipeline = []
         reader = {
             "bounds": "",
@@ -75,37 +94,35 @@ class RasterGetter:
             "inputs": ["writerslas"],
             "nodata": -9999,
             "output_type": "idw",
-            "resolution": 1,
+            "resolution": 5,
             "type": "writers.gdal",
             "window_size": 6
         }
         self.dynamic_pipeline.append(tif_writer)
 
-        return self.dynamic_pipeline
-
-    def load_pipeline(self):
-        try:
-            self.external_pipeline = self.construct_pipeline()
-            logger.info("Template Pipeline Successfully created")
-        except Exception as e:
-            print(e)
-            logger.info("Template Pipeline Could not be created")
-
     def get_raster_terrain(self, region: str) -> None:
+        """
+
+        Generates the region's las and tif files using the pdal library
+
+        Parameters
+        ----------
+        region: str : region where bounds occur
+        """
 
         logger.info(f"Fetching Laz and tiff files for {region}")
         PUBLIC_ACCESS_PATH = self.public_data_path + region + "ept.json"
 
         # dynamically update template pipeline
-        self.external_pipeline['pipeline'][0]['bounds'] = self.bounds
-        self.external_pipeline['pipeline'][0]['filename'] = PUBLIC_ACCESS_PATH
-        self.external_pipeline['pipeline'][2]['in_srs'] = f"EPSG:{self.crs}"
-        self.external_pipeline['pipeline'][2]['out_srs'] = f"EPSG:{self.crs}"
-        self.external_pipeline['pipeline'][3]['filename'] = f"{str(region).strip('/')}.laz"
-        self.external_pipeline['pipeline'][4]['filename'] = f"{str(region).strip('/')}.tif"
+        self.dynamic_pipeline[0]['bounds'] = self.bounds
+        self.dynamic_pipeline[0]['filename'] = PUBLIC_ACCESS_PATH
+        self.dynamic_pipeline[2]['in_srs'] = f"EPSG:{self.crs}"
+        self.dynamic_pipeline[2]['out_srs'] = f"EPSG:{self.crs}"
+        self.dynamic_pipeline[3]['filename'] = f"{str(region).strip('/')}.laz"
+        self.dynamic_pipeline[4]['filename'] = f"{str(region).strip('/')}.tif"
 
         # create pdal pipeline
-        pipeline = pdal.Pipeline(json.dumps(self.external_pipeline))
+        pipeline = pdal.Pipeline(json.dumps(self.dynamic_pipeline))
         logger.info("Pipeline Dumped and Read for use")
 
         # execute pipeline
@@ -115,16 +132,34 @@ class RasterGetter:
         logger.info("Pipeline Completed Execution Successfully ")
 
     def get_geodataframe(self, region: str, save_png: bool, resolution: int) -> gpd.GeoDataFrame:
+        """
+
+        Converts the pdal generated tif file into a shp file and creates a geodataframe from the
+        shp file and calculates it topographic wetness index
+
+        Parameters
+        ----------
+        region: str : region where bounds occur
+
+        save_png: bool : Whether to save the plot of the region (takes a significant amount of time
+        to save the plot)
+
+        resolution: int : resolution of the points
+
+        Returns: a geopandas dataframe
+        -------
+
+        """
         self.tif_to_shp(f"{str(region).strip('/')}.tif", f"{str(region).strip('/')}.shp")
-        gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
+        self.gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
 
-        gdf["area"] = gdf["geometry"].area
-        gdf["denom"] = gdf["elevation"] / resolution
-        gdf["TWI"] = np.log(gdf["area"] / gdf["denom"])
+        self.gdf["area"] = self.gdf["geometry"].area
+        self.gdf["denom"] = self.gdf["elevation"] / resolution
+        self.gdf["TWI"] = np.log(self.gdf["area"] / self.gdf["denom"])
 
-        gdf.drop(["area", "denom"], axis=1, inplace=True)
+        self.gdf.drop(["area", "denom"], axis=1, inplace=True)
 
-        gdf["geometry"] = gdf["geometry"].centroid
+        self.gdf["geometry"] = self.gdf["geometry"].centroid
 
         if save_png:
             logger.info(f"saving plot as {str(region).strip('/')}.png")
@@ -133,13 +168,41 @@ class RasterGetter:
             fig.set_size_inches(18.5, 10.5)
             fig.savefig(f"{str(region).strip('/')}.png")
 
-        return gdf
+        return self.gdf
 
     def save_as_geojson(self, filename: str) -> None:
+        """
+
+        saves the geopandas datafrme in the geojson format
+
+        Parameters
+        ----------
+        filename: str : what you want the json saved as
+
+        Returns
+        -------
+
+        """
         self.gdf.to_file(filename, driver="GeoJSON")
         logger.info(f"GeoDataframe Elevation File Successfully Saved as {filename}")
 
     def region_gdf_dict(self, saved_png: bool, resolution: int = 5) -> dict:
+        """
+
+        creates a dictionary where the keys are the regions or the years where
+        the entered boundaries fall in
+
+        Parameters
+        ----------
+        saved_png: bool : save the plot of the region the bounds fall in
+
+        resolution: int : resolution of the geometric points
+             (Default value = 5)
+
+        Returns: a dictionary of form {"year / region": geopandas.DataFrame}
+        -------
+
+        """
         region_gdf = {}
         for region in self.regions:
             year = region.split("_")[-1][:-1]
@@ -160,6 +223,19 @@ class RasterGetter:
         return region_gdf
 
     def tif_to_shp(self, tif_filename: str, shp_filename: str) -> None:
+        """
+        Converts the pdal generated tif file into a shp file
+
+        Parameters
+        ----------
+        tif_filename: str : name of the created tif file
+
+        shp_filename: str : name of the shp file to be saved as
+
+        Returns
+        -------
+
+        """
         # mapping between gdal type and ogr field type
         type_mapping = {gdal.GDT_Byte: ogr.OFTInteger,
                         gdal.GDT_UInt16: ogr.OFTInteger,

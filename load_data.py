@@ -11,7 +11,21 @@ s3 = boto3.client("s3")
 bucket = "usgs-lidar-public"
 bucket_url = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
 
-def list_folders(s3_client: str, bucket_name: str):
+def list_folders(s3_client: boto3.client, bucket_name: str):
+    """
+    This function takes an s3 boto3 client and the a s3 bucket's name and
+    yields all the folder names in the s3 bucket
+    Parameters
+    ----------
+    s3_client: boto3.client : s3 boto3 client
+
+    bucket_name: str : the desired bucket's name
+
+
+    Returns : a python generator
+    -------
+
+    """
     logger.info(f"fetching folders in {bucket_name}")
     paginator = s3_client.get_paginator('list_objects_v2')
     response_iterator = paginator.paginate(Bucket=bucket_name, Delimiter='/',
@@ -44,6 +58,13 @@ async def run() -> list:
     return region_info
 
 def load_ept_json() -> dict:
+    """
+    calls the asynchronous functions that get all the ept.json files in the usgs-lidar-public bucket
+    and passes the result into the Info class so that we can get the data readily
+
+
+    Returns : a dictionary
+    """
     loop = asyncio.get_event_loop()
     future = asyncio.ensure_future(run())
     regions = loop.run_until_complete(future)
