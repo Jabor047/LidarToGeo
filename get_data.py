@@ -1,13 +1,10 @@
 import ast
-import math
 import pdal
 import json
 import load_data
 from osgeo import ogr, gdal
 import numpy as np
-import georasters as gr
 import geopandas as gpd
-from pprint import pprint
 from logger import setup_logger
 
 logger = setup_logger("get_data")
