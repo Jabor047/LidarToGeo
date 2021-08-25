@@ -1,11 +1,12 @@
 import unittest
-import sys, os
+import sys
+import os
 import requests
 import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join('../')))
 
-from lidardataextractor.schema import Schema
+from schema import Schema
 
 
 url = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/USGS_LPC_CO_SoPlatteRiver_Lot5_2013_LAS_2015/ept.json"
