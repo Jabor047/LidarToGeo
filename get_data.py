@@ -1,3 +1,4 @@
+import os
 import ast
 import pdal
 import json
@@ -10,7 +11,12 @@ from logger import setup_logger
 logger = setup_logger("get_data")
 
 class RasterGetter:
-    """ """
+    """
+    fetches the point cloud data from the usgs-lidar-public bucket and converts it
+    to a geopandas dataframe
+
+    dataset: https://registry.opendata.aws/usgs-lidar/
+    """
 
     def __init__(self, bounds: str, crs: int) -> None:
         self.bounds = bounds
@@ -18,7 +24,8 @@ class RasterGetter:
         self.public_data_path = "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/"
         # get region based in bounds
         self.regions = self.get_region(bounds)
-        self.load_pipeline()
+        self.path = os.getcwd()
+        self.construct_pipeline()
 
     def get_region(self, bounds: str) -> list:
         """
@@ -51,7 +58,7 @@ class RasterGetter:
         logger.info(f"regions containing the boundaries are {regions}")
         return regions
 
-    def construct_pipeline(self) -> list:
+    def construct_pipeline(self):
         """
         creates a list containing a json of the pipeline to pass into the PDAL
         library
@@ -115,8 +122,8 @@ class RasterGetter:
         self.dynamic_pipeline[0]['filename'] = PUBLIC_ACCESS_PATH
         self.dynamic_pipeline[2]['in_srs'] = f"EPSG:{self.crs}"
         self.dynamic_pipeline[2]['out_srs'] = f"EPSG:{self.crs}"
-        self.dynamic_pipeline[3]['filename'] = f"{str(region).strip('/')}.laz"
-        self.dynamic_pipeline[4]['filename'] = f"{str(region).strip('/')}.tif"
+        self.dynamic_pipeline[3]['filename'] = self.path + f"/{str(region).strip('/')}.laz"
+        self.dynamic_pipeline[4]['filename'] = self.path + f"/{str(region).strip('/')}.tif"
 
         # create pdal pipeline
         pipeline = pdal.Pipeline(json.dumps(self.dynamic_pipeline))
@@ -147,8 +154,9 @@ class RasterGetter:
         -------
 
         """
-        self.tif_to_shp(f"{str(region).strip('/')}.tif", f"{str(region).strip('/')}.shp")
-        self.gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
+        self.tif_to_shp(self.path + f"/{str(region).strip('/')}.tif",
+                        self.path + f"/{str(region).strip('/')}.shp")
+        self.gdf = gpd.read_file(self.path + f"/{str(region).strip('/')}.shp")
 
         self.gdf["area"] = self.gdf["geometry"].area
         self.gdf["denom"] = self.gdf["elevation"] / resolution
