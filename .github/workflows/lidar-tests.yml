@@ -14,7 +14,7 @@ jobs:
     - name: setup-env
       run: |
         conda install -c conda-forge pdal python-pdal gdal geopandas
-        pip install -r requirements
+        pip install -r requirements.txt
 
     - name: run-tests
       run: |
