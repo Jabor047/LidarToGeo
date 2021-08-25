@@ -1,0 +1,24 @@
+name: lidar-tests
+on: [push]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup-conda
+      uses: s-weigand/setup-conda@v1.0.7
+      with:
+        activate-conda: true
+        python-version: 3.7.11
+        conda-channels: 'conda-forge'
+    - name: setup-env
+      run: |
+        conda install -c conda-forge pdal python-pdal gdal geopandas
+        pip install -r requirements
+
+    - name: run-tests
+      run: |
+        python -m unittest tests.test_ept_info
+        python -m unittest tests.test_schema
+        python -m unittest tests.test_get_data
+    
