@@ -1,9 +1,12 @@
 import unittest
-import os
 import sys
 import geopandas as gpd
+from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join('../')))
+test_file = Path(__file__).resolve()
+parent_dir = test_file.parents[1]
+sys.path.append(str(parent_dir))
+
 from get_data import RasterGetter
 
 class TestRasterGetter(unittest.TestCase):
