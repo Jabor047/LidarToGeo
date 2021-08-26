@@ -254,7 +254,7 @@ class RasterGetter:
                         gdal.GDT_CFloat32: ogr.OFTReal,
                         gdal.GDT_CFloat64: ogr.OFTReal}
 
-        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        files = [f for f in os.listdir(self.path) if os.path.isfile(f)]
         print(files)
 
         gdal.UseExceptions()
