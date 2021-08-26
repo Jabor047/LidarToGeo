@@ -5,12 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
+    - name: config-aws
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
     - name: setup-conda
       uses: s-weigand/setup-conda@v1.0.7
       with:
         activate-conda: true
         python-version: 3.7.11
         conda-channels: 'conda-forge'
+
     - name: setup-env
       run: |
         conda install -c conda-forge pdal python-pdal gdal geopandas
