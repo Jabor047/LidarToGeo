@@ -1,0 +1,21 @@
+[0;1;32m●[0m NetworkManager.service - Network Manager
+     Loaded: loaded (]8;;file://tinyrick/usr/lib/systemd/system/NetworkManager.service/usr/lib/systemd/system/NetworkManager.service]8;;; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Wed 2021-08-25 11:28:49 EAT; 9h ago
+       Docs: ]8;;man:NetworkManager(8)man:NetworkManager(8)]8;;
+   Main PID: 945 (NetworkManager)
+      Tasks: 3 (limit: 9377)
+     Memory: 6.5M
+        CPU: 7.548s
+     CGroup: /system.slice/NetworkManager.service
+             └─945 /usr/sbin/NetworkManager --no-daemon
+
+Aug 25 21:09:42 tinyrick NetworkManager[945]: <info>  [1629914982.8482] manager: NetworkManager state is now CONNECTED_LOCAL
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8015] device (enp8s0): carrier: link connected
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8021] device (enp8s0): state change: unavailable -> disconnected (reason 'carrier-changed', sys-iface-state: 'managed')
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8047] policy: auto-activating connection 'Wired connection 1' (73769545-9e7d-3f3d-91c7-5bbc71a2fbf2)
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8054] device (enp8s0): Activation: starting connection 'Wired connection 1' (73769545-9e7d-3f3d-91c7-5bbc71a2fbf2)
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8055] device (enp8s0): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8061] manager: NetworkManager state is now CONNECTING
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8064] device (enp8s0): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8201] device (enp8s0): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
+Aug 25 21:11:38 tinyrick NetworkManager[945]: <info>  [1629915098.8208] dhcp4 (enp8s0): activation: beginning transaction (timeout in 45 seconds)

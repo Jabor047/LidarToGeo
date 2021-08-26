@@ -254,6 +254,9 @@ class RasterGetter:
                         gdal.GDT_CFloat32: ogr.OFTReal,
                         gdal.GDT_CFloat64: ogr.OFTReal}
 
+        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        print(files)
+
         gdal.UseExceptions()
         logger.info("Converting tif file to shp")
         try:
