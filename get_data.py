@@ -122,8 +122,8 @@ class RasterGetter:
         self.dynamic_pipeline[0]['filename'] = PUBLIC_ACCESS_PATH
         self.dynamic_pipeline[2]['in_srs'] = f"EPSG:{self.crs}"
         self.dynamic_pipeline[2]['out_srs'] = f"EPSG:{self.crs}"
-        self.dynamic_pipeline[3]['filename'] = self.path + f"/{str(region).strip('/')}.laz"
-        self.dynamic_pipeline[4]['filename'] = self.path + f"/{str(region).strip('/')}.tif"
+        self.dynamic_pipeline[3]['filename'] = f"{str(region).strip('/')}.laz"
+        self.dynamic_pipeline[4]['filename'] = f"{str(region).strip('/')}.tif"
 
         # create pdal pipeline
         pipeline = pdal.Pipeline(json.dumps(self.dynamic_pipeline))
@@ -154,9 +154,9 @@ class RasterGetter:
         -------
 
         """
-        self.tif_to_shp(self.path + f"/{str(region).strip('/')}.tif",
-                        self.path + f"/{str(region).strip('/')}.shp")
-        self.gdf = gpd.read_file(self.path + f"/{str(region).strip('/')}.shp")
+        self.tif_to_shp(f"{str(region).strip('/')}.tif",
+                        f"{str(region).strip('/')}.shp")
+        self.gdf = gpd.read_file(f"{str(region).strip('/')}.shp")
 
         self.gdf["area"] = self.gdf["geometry"].area
         self.gdf["denom"] = self.gdf["elevation"] / resolution
