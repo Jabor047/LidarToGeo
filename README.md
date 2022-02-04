@@ -8,7 +8,7 @@ This package will write the following to the directory you are running the scrip
 
 ## installation
 ```
-pip install lidar_to_geo
+pip install lidarToGeo
 
 ```
 
