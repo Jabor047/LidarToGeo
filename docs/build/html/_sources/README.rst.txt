@@ -50,4 +50,4 @@ b. **Cloning the repo and install the dependency packages using *requirements.tx
 
    git clone https://github.com/Jabor047/LidarToGeo
    cd src/lidarToGeo
-   conda install -r requirements.txt
+   conda install --file requirements.txt

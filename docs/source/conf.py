@@ -15,7 +15,7 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join('../../')))
+sys.path.insert(0, os.path.abspath(os.path.join('../../')))
 
 
 # -- Project information -----------------------------------------------------
@@ -51,6 +51,7 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 autosummary_generate = True
+autodoc_mock_imports = ["pdal"]
 
 # -- Options for HTML output -------------------------------------------------
 
