@@ -6,6 +6,9 @@ Contains code that goes through the [usgs-lidar-public](https://registry.opendat
 
 This package will write the following to the directory you are running the script in: a laz file, tif file, shp file and a png file depending on the saved_png flag below.
 
+## Documentation
+You can view the package's documentation [here](https://lidartogeo.readthedocs.io/en/latest/)
+
 ## installation
 ```
 pip install lidarToGeo
