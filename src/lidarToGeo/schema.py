@@ -1,4 +1,3 @@
-from types import DynamicClassAttribute
 import numpy as np
 
 class Schema(object):

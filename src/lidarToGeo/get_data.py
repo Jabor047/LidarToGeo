@@ -2,11 +2,11 @@ import os
 import ast
 import pdal
 import json
-import load_data
+import src.lidarToGeo.load_data
 from osgeo import ogr, gdal
 import numpy as np
 import geopandas as gpd
-from logger import setup_logger
+from src.lidarToGeo.logger import setup_logger
 
 logger = setup_logger("get_data")
 
@@ -43,7 +43,7 @@ class RasterGetter:
 
         """
         logger.info("Finding Entered bound's region")
-        region_ept_info = load_data.load_ept_json()
+        region_ept_info = src.lidarToGeo.load_data.load_ept_json()
         user_bounds = ast.literal_eval(bounds)
         regions = []
 

@@ -1,9 +1,9 @@
 import json
-import schema
+import src.lidarToGeo.schema
 import pyproj
 import numpy as np
 from pyproj import CRS
-from schema import Schema
+from src.lidarToGeo.schema import Schema
 
 class Info(object):
     """
@@ -23,7 +23,7 @@ class Info(object):
         """
         return int(self.data['points'])
 
-    def get_schema(self) -> schema.Schema:
+    def get_schema(self) -> src.lidarToGeo.schema.Schema:
         """
         reads the data in the schema key and passes that data to the Schema class
         """

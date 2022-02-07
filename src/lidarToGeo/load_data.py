@@ -2,8 +2,8 @@ import json
 import boto3
 import asyncio
 from aiohttp import ClientSession
-from ept_info import Info
-from logger import setup_logger
+from src.lidarToGeo.ept_info import Info
+from src.lidarToGeo.logger import setup_logger
 
 logger = setup_logger("load_data")
 
@@ -20,7 +20,6 @@ def list_folders(s3_client: boto3.client, bucket_name: str):
     s3_client: boto3.client : s3 boto3 client
 
     bucket_name: str : the desired bucket's name
-
 
     Returns : a python generator
     -------
