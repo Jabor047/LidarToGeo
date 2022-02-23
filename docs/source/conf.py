@@ -51,7 +51,7 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 autosummary_generate = True
-autodoc_mock_imports = ["pdal"]
+# autodoc_mock_imports = ["pdal"]
 
 # -- Options for HTML output -------------------------------------------------
 
