@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RasterGetter &mdash; lidarToGeo 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="RasterGetter.__init__" href="src.lidarToGeo.get_data.RasterGetter.__init__.html" />
+    <link rel="prev" title="src.lidarToGeo.get_data" href="src.lidarToGeo.get_data.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> lidarToGeo
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Installation &amp; Examples</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="src.lidarToGeo.ept_info.html">src.lidarToGeo.ept_info</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="src.lidarToGeo.get_data.html">src.lidarToGeo.get_data</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RasterGetter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.__init__.html">RasterGetter.__init__</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.construct_pipeline.html">RasterGetter.construct_pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_geodataframe.html">RasterGetter.get_geodataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_raster_terrain.html">RasterGetter.get_raster_terrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_region.html">RasterGetter.get_region</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.region_gdf_dict.html">RasterGetter.region_gdf_dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.save_as_geojson.html">RasterGetter.save_as_geojson</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.tif_to_shp.html">RasterGetter.tif_to_shp</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src.lidarToGeo.load_data.html">src.lidarToGeo.load_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src.lidarToGeo.schema.html">src.lidarToGeo.schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src.lidarToGeo.__init__.html">__init__</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">lidarToGeo</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="src.lidarToGeo.get_data.html">src.lidarToGeo.get_data</a> &raquo;</li>
+      <li>RasterGetter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/src.lidarToGeo.get_data.RasterGetter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rastergetter">
+<h1>RasterGetter<a class="headerlink" href="#rastergetter" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.lidarToGeo.get_data.RasterGetter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.lidarToGeo.get_data.</span></span><span class="sig-name descname"><span class="pre">RasterGetter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/lidarToGeo/get_data.html#RasterGetter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.lidarToGeo.get_data.RasterGetter" title="Permalink to this definition"></a></dt>
+<dd><p>fetches the point cloud data from the usgs-lidar-public bucket and converts it
+to a geopandas dataframe</p>
+<p>dataset: <a class="reference external" href="https://registry.opendata.aws/usgs-lidar/">https://registry.opendata.aws/usgs-lidar/</a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.__init__.html#src.lidarToGeo.get_data.RasterGetter.__init__" title="src.lidarToGeo.get_data.RasterGetter.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.__init__</span></code></a>(bounds, crs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.construct_pipeline.html#src.lidarToGeo.get_data.RasterGetter.construct_pipeline" title="src.lidarToGeo.get_data.RasterGetter.construct_pipeline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.construct_pipeline</span></code></a>()</p></td>
+<td><p>creates a list containing a json of the pipeline to pass into the PDAL library</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_geodataframe.html#src.lidarToGeo.get_data.RasterGetter.get_geodataframe" title="src.lidarToGeo.get_data.RasterGetter.get_geodataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.get_geodataframe</span></code></a>(region, ...)</p></td>
+<td><p>Converts the pdal generated tif file into a shp file and creates a geodataframe from the shp file and calculates it topographic wetness index</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_raster_terrain.html#src.lidarToGeo.get_data.RasterGetter.get_raster_terrain" title="src.lidarToGeo.get_data.RasterGetter.get_raster_terrain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.get_raster_terrain</span></code></a>(region)</p></td>
+<td><p>Generates the region's las and tif files using the pdal library</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.get_region.html#src.lidarToGeo.get_data.RasterGetter.get_region" title="src.lidarToGeo.get_data.RasterGetter.get_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.get_region</span></code></a>(bounds)</p></td>
+<td><p>Gets all the regions the given boundaries lie in</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.region_gdf_dict.html#src.lidarToGeo.get_data.RasterGetter.region_gdf_dict" title="src.lidarToGeo.get_data.RasterGetter.region_gdf_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.region_gdf_dict</span></code></a>(saved_png[, ...])</p></td>
+<td><p>creates a dictionary where the keys are the regions or the years where the entered boundaries fall in</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.save_as_geojson.html#src.lidarToGeo.get_data.RasterGetter.save_as_geojson" title="src.lidarToGeo.get_data.RasterGetter.save_as_geojson"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.save_as_geojson</span></code></a>(filename)</p></td>
+<td><p>saves the geopandas datafrme in the geojson format</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="src.lidarToGeo.get_data.RasterGetter.tif_to_shp.html#src.lidarToGeo.get_data.RasterGetter.tif_to_shp" title="src.lidarToGeo.get_data.RasterGetter.tif_to_shp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RasterGetter.tif_to_shp</span></code></a>(tif_filename, ...)</p></td>
+<td><p>Converts the pdal generated tif file into a shp file</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.lidarToGeo.get_data.html" class="btn btn-neutral float-left" title="src.lidarToGeo.get_data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.lidarToGeo.get_data.RasterGetter.__init__.html" class="btn btn-neutral float-right" title="RasterGetter.__init__" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jabor047.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
